@@ -1,6 +1,6 @@
 import React from "react";
 import Navbar from "@/components/navbar/Navbar";
-import AuthModal from "@/components/models/AuthModal";
+import AuthModal from "@/components/modals/AuthModal";
 
 type Props = {};
 
