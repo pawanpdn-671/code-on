@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSetRecoilState } from "recoil";
 import { authModalState } from "@/atoms/authModalAtom";
+import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { auth } from "@/firebase/firebase";
+import { useRouter } from "next/navigation";
 
 type Props = {};
 
@@ -9,8 +12,33 @@ const Signup = (props: Props) => {
 	const handleClick = (type: "login" | "register" | "forgotPassword") => {
 		setAuthModalState((prev) => ({ ...prev, type }));
 	};
+
+	const [inputs, setInputs] = useState({
+		email: "",
+		displayName: "",
+		password: "",
+	});
+	const router = useRouter();
+
+	const [createUserWithEmailAndPassword, user, loading, error] = useCreateUserWithEmailAndPassword(auth);
+
+	const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+	};
+
+	const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		try {
+			const newUser = await createUserWithEmailAndPassword(inputs.email, inputs.password);
+			if (!newUser) return;
+			router.push("/");
+		} catch (error: any) {
+			alert(error.message);
+		}
+	};
+
 	return (
-		<form className="space-y-6 px-6 pb-8 pt-2">
+		<form className="space-y-6 px-6 pb-8 pt-2" onSubmit={handleRegister}>
 			<h3 className="text-xl font-medium text-white">Register to CodeOn</h3>
 			<div>
 				<label htmlFor="email" className="text-sm font-medium block mb-3 text-gray-300">
@@ -20,6 +48,7 @@ const Signup = (props: Props) => {
 					type="email"
 					name="email"
 					id="email"
+					onChange={handleChangeInput}
 					className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
 					placeholder="name@company.com"
 				/>
@@ -32,6 +61,7 @@ const Signup = (props: Props) => {
 					type="displayName"
 					name="displayName"
 					id="displayName"
+					onChange={handleChangeInput}
 					className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
 					placeholder="Pawan Pradhan"
 				/>
@@ -44,6 +74,7 @@ const Signup = (props: Props) => {
 					type="password"
 					name="password"
 					id="password"
+					onChange={handleChangeInput}
 					className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
 					placeholder="********"
 				/>
