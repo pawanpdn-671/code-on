@@ -1,3 +1,4 @@
+import ProblemsTable from "@/components/problemsTable/ProblemsTable";
 import Topbar from "@/components/topbar/Topbar";
 import Image from "next/image";
 
@@ -29,6 +30,7 @@ export default function Home() {
 							</th>
 						</tr>
 					</thead>
+					<ProblemsTable />
 				</table>
 			</div>
 		</main>
