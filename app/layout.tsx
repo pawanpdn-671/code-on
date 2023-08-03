@@ -2,6 +2,8 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { RecoilRoot } from "recoil";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -13,6 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 		<html lang="en">
 			<body>
 				<RecoilRoot>{children}</RecoilRoot>
+				<ToastContainer />
 			</body>
 		</html>
 	);

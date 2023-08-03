@@ -1,10 +1,35 @@
-import React from "react";
+"use client";
+import { auth } from "@/firebase/firebase";
+import React, { useEffect, useState } from "react";
+import { useSendPasswordResetEmail } from "react-firebase-hooks/auth";
+import { toast } from "react-toastify";
 
 type Props = {};
 
 const ResetPassword = (props: Props) => {
+	const [email, setEmail] = useState("");
+	const [sendPasswordResetEmail, sending, error] = useSendPasswordResetEmail(auth);
+
+	const handleReset = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const success = await sendPasswordResetEmail(email);
+		if (success) {
+			toast.success("Email sent successfully!", { position: "top-right", autoClose: 5000, theme: "dark" });
+		}
+	};
+
+	useEffect(() => {
+		if (error) {
+			toast.error(error.message, {
+				position: "top-right",
+				theme: "dark",
+				autoClose: 5000,
+			});
+		}
+	}, [error]);
+
 	return (
-		<form className="space-y-6 px-6 pb-8 pt-2">
+		<form className="space-y-6 px-6 pb-8 pt-2" onSubmit={handleReset}>
 			<h3 className="text-xl font-medium text-white">Reset Your Password</h3>
 			<p className="text-sm text-white">
 				Forgotten your password? Enter your e-mail address below, and we will send you an e-mail allowing you to
@@ -18,6 +43,7 @@ const ResetPassword = (props: Props) => {
 					type="email"
 					name="email"
 					id="email"
+					onChange={(e) => setEmail(e.target.value)}
 					className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
 					placeholder="name@company.com"
 				/>

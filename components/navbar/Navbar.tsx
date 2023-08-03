@@ -1,5 +1,6 @@
 "use client";
 import { authModalState } from "@/atoms/authModalAtom";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { useSetRecoilState } from "recoil";
@@ -15,7 +16,7 @@ function Navbar({}: Props) {
 	return (
 		<div className="flex items-center justify-between sm:px-12 px-2 ml:px-24">
 			<Link href="/" className="flex items-center justify-center h-20">
-				<img src="/assets/logo.png" alt="code on" className="h-[32px]" />
+				<Image src="/assets/logo.png" alt="code on" width={120} height={32} />
 			</Link>
 			<div className="flex items-center">
 				<button
