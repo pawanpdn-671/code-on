@@ -1,19 +1,27 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { problems } from "@/mockProblems/problems";
+import React, { useState, useEffect, SetStateAction } from "react";
 import { BsCheckCircle } from "react-icons/bs";
 import Link from "next/link";
 import { AiFillYoutube } from "react-icons/ai";
 import { IoClose } from "react-icons/io5";
 import Youtube from "react-youtube";
+import { collection, doc, getDoc, getDocs, orderBy, query } from "firebase/firestore";
+import { auth, firestore } from "@/firebase/firebase";
+import { DBProblem } from "@/utils/types/problem";
+import { useAuthState } from "react-firebase-hooks/auth";
 
-type Props = {};
+type ProblemsTableProps = {
+	setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+};
 
-const ProblemsTable = (props: Props) => {
+const ProblemsTable = ({ setLoading }: ProblemsTableProps) => {
 	const [youtubePlayer, setYoutubePlayer] = useState({
 		isOpen: false,
 		videoId: "",
 	});
+
+	const problems = useGetProblems(setLoading);
+	const solvedProblems = useGetSolvedProblems();
 
 	const closeModal = () => {
 		setYoutubePlayer({ isOpen: false, videoId: "" });
@@ -32,34 +40,40 @@ const ProblemsTable = (props: Props) => {
 	return (
 		<>
 			<tbody className="text-white">
-				{problems.map((doc, idx) => {
+				{problems.map((problem, idx) => {
 					const difColor =
-						doc.difficulty === "Easy"
+						problem.difficulty === "Easy"
 							? "text-dark-green-s"
-							: doc.difficulty === "Medium"
+							: problem.difficulty === "Medium"
 							? "text-dark-yellow"
 							: "text-dark-pink";
 
 					return (
-						<tr className={`${idx % 2 === 1 ? "bg-dark-layer-1" : ""}`} key={doc.id}>
+						<tr className={`${idx % 2 === 1 ? "bg-dark-layer-1" : ""}`} key={problem.id}>
 							<th className="px-2 py-4 font-medium whitespace-nowrap text-dark-green-s">
-								<BsCheckCircle fontSize={"18"} width="18" />
+								{solvedProblems.includes(problem.id) && <BsCheckCircle fontSize={"18"} width="18" />}
 							</th>
 							<td className="px-6 py-4">
-								<Link
-									className="hover:text-blue-400 transition-colors ease-in-out duration-200 cursor-pointer"
-									href={`/problems/${doc.id}`}>
-									{doc.title}
-								</Link>
+								{problem.link ? (
+									<Link href={problem.link} className="hover:text-blue-600 cursor-pointer" target="_blank">
+										{problem.title}
+									</Link>
+								) : (
+									<Link
+										className="hover:text-blue-400 transition-colors ease-in-out duration-200 cursor-pointer"
+										href={`/problems/${problem.id}`}>
+										{problem.title}
+									</Link>
+								)}
 							</td>
-							<td className={`px-6 py-4 ${difColor}`}>{doc.difficulty}</td>
-							<td className={`px-6 py-4`}>{doc.category}</td>
+							<td className={`px-6 py-4 ${difColor}`}>{problem.difficulty}</td>
+							<td className={`px-6 py-4`}>{problem.category}</td>
 							<td className={`px-6 py-4`}>
-								{doc.videoId ? (
+								{problem.videoId ? (
 									<AiFillYoutube
 										fontSize={"24"}
 										className="cursor-pointer hover:text-red-600 transition-colors ease-in-out duration-200"
-										onClick={() => setYoutubePlayer({ isOpen: true, videoId: doc.videoId as string })}
+										onClick={() => setYoutubePlayer({ isOpen: true, videoId: problem.videoId as string })}
 									/>
 								) : (
 									<p className="text-gray-400">Coming soon</p>
@@ -97,3 +111,43 @@ const ProblemsTable = (props: Props) => {
 };
 
 export default ProblemsTable;
+
+function useGetProblems(setLoading: React.Dispatch<SetStateAction<boolean>>) {
+	const [problems, setproblems] = useState<DBProblem[]>([]);
+
+	useEffect(() => {
+		const getProblems = async () => {
+			setLoading(true);
+			const q = query(collection(firestore, "problems"), orderBy("order", "asc"));
+			const querySnapshot = await getDocs(q);
+			const temp: DBProblem[] = [];
+			querySnapshot.forEach((doc) => {
+				temp.push({ id: doc.id, ...doc.data() } as DBProblem);
+			});
+			setproblems(temp);
+			setLoading(false);
+		};
+		getProblems();
+	}, [setLoading]);
+	return problems;
+}
+
+function useGetSolvedProblems() {
+	const [solvedProblems, setSolvedProblems] = useState<string[]>([]);
+	const [user] = useAuthState(auth);
+
+	useEffect(() => {
+		const getSolvedProblems = async () => {
+			const userRef = doc(firestore, "users", user!.uid);
+			const userDoc = await getDoc(userRef);
+
+			if (userDoc.exists()) {
+				setSolvedProblems(userDoc.data().solvedProblems);
+			}
+		};
+
+		if (user) getSolvedProblems();
+		if (!user) setSolvedProblems([]);
+	}, [user]);
+	return solvedProblems;
+}

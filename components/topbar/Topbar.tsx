@@ -1,4 +1,3 @@
-"use client";
 import { auth } from "@/firebase/firebase";
 import Link from "next/link";
 import React from "react";
@@ -7,12 +6,40 @@ import Logout from "../buttons/Logout";
 import { useSetRecoilState } from "recoil";
 import { authModalState } from "@/atoms/authModalAtom";
 import Image from "next/image";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { BsList } from "react-icons/bs";
+import Timer from "../timer/Timer";
+import { useParams, useRouter } from "next/navigation";
+import { problems } from "@/utils/problems";
 
-type TopbarProps = {};
+type TopbarProps = {
+	problemPage?: boolean;
+};
 
-const Topbar: React.FC<TopbarProps> = () => {
+const Topbar: React.FC<TopbarProps> = ({ problemPage }) => {
 	const [user] = useAuthState(auth);
 	const setAuthModalState = useSetRecoilState(authModalState);
+	const router = useRouter();
+	const searchParams = useParams();
+
+	const handlePrevNextClick = (isForward: boolean) => {
+		const { order } = problems[searchParams.pid as string];
+		const direction = isForward ? 1 : -1;
+		const nextProblemOrder = order + direction;
+		const nextProblemKey = Object.keys(problems).find((key) => problems[key].order === nextProblemOrder);
+
+		if (isForward && !nextProblemKey) {
+			const firstProblemKey = Object.keys(problems).find((key) => problems[key].order === 1);
+			router.push(`/problems/${firstProblemKey}`);
+		} else if (!isForward && !nextProblemKey) {
+			const lastProblemKey = Object.keys(problems).find(
+				(key) => problems[key].order === Object.keys(problems).length,
+			);
+			router.push(`/problems/${lastProblemKey}`);
+		} else {
+			router.push(`/problems/${nextProblemKey}`);
+		}
+	};
 
 	return (
 		<nav className="relative flex h-[50px] w-full shrink-0 items-center px-5 bg-dark-layer-1 text-dark-gray-7">
@@ -20,6 +47,29 @@ const Topbar: React.FC<TopbarProps> = () => {
 				<Link href="/" className="h-[27px] flex-1">
 					<Image src="/assets/logo.png" width={120} height={32} alt="logo" />
 				</Link>
+
+				{problemPage && (
+					<div className="flex items-center gap-4 flex-1 justify-center">
+						<div
+							className="flex items-center justify-center rounded bg-dark-fill-3 hover:bg-dark-fill-2 h-8 w-8 cursor-pointer"
+							onClick={() => handlePrevNextClick(false)}>
+							<FaChevronLeft />
+						</div>
+						<Link
+							href="/"
+							className="flex items-center gap-2 font-medium max-w-[170px] text-dark-gray-8 cursor-pointer">
+							<div>
+								<BsList />
+							</div>
+							<p>Problems List</p>
+						</Link>
+						<div
+							className="flex items-center justify-center rounded bg-dark-fill-3 hover:bg-dark-fill-2 h-8 w-8 cursor-pointer"
+							onClick={() => handlePrevNextClick(true)}>
+							<FaChevronRight />
+						</div>
+					</div>
+				)}
 				<div className="flex items-center space-x-4 flex-1 justify-end">
 					<div>
 						<a
@@ -39,6 +89,7 @@ const Topbar: React.FC<TopbarProps> = () => {
 							</button>
 						</Link>
 					)}
+					{user && problemPage && <Timer />}
 					{user && (
 						<div className="cursor-pointer group relative">
 							<img src="/assets/avatar.png" alt="user profile" className="h-8 w-8 rounded-full" />

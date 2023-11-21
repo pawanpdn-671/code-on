@@ -14,7 +14,7 @@ function Navbar({}: Props) {
 	};
 
 	return (
-		<div className="flex items-center justify-between sm:px-12 px-2 ml:px-24">
+		<div className="flex items-center justify-between sm:px-12 px-2 md:px-24">
 			<Link href="/" className="flex items-center justify-center h-20">
 				<Image src="/assets/logo.png" alt="code on" width={120} height={32} />
 			</Link>
