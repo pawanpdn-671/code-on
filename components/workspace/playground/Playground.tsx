@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import PreferenceNav from "./PreferenceNav";
 import Split from "react-split";
@@ -29,9 +30,8 @@ export interface ISettings {
 const Playground = ({ problem, setSuccess, setSolved }: PlaygroundProps) => {
 	const [activeTestCaseId, setActiveTestCaseId] = useState<number>(0);
 	let [userCode, setUserCode] = useState<string>(problem.starterCode);
-	const [fontSize, setFontSize] = useLocalStorage("codeon-fontSize", "16px");
 	const [settings, setSettings] = useState<ISettings>({
-		fontSize: fontSize,
+		fontSize: "",
 		settingsModalOpen: false,
 		dropdownOpen: false,
 	});
@@ -102,6 +102,13 @@ const Playground = ({ problem, setSuccess, setSolved }: PlaygroundProps) => {
 		setUserCode(value);
 		localStorage.setItem(`code-${pid}`, JSON.stringify(value));
 	};
+
+	useEffect(() => {
+		const fs = window.localStorage.getItem("codeon-fontSize");
+		if (fs) {
+			setSettings({ ...settings, fontSize: JSON.parse(fs) });
+		} else setSettings({ ...settings, fontSize: "16px" });
+	}, []);
 
 	return (
 		<div className="flex flex-col bg-dark-layer-1 relative overflow-x-hidden">

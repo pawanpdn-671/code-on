@@ -1,8 +1,8 @@
+"use client";
 import { BsCheckLg, BsChevronDown } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
 import { ISettings } from "../workspace/playground/Playground";
 import useLocalStorage from "@/hooks/useLocalStorage";
-// import useLocalStorage from "@/hooks/useLocalStorage";
 
 const EDITOR_FONT_SIZES = ["12px", "13px", "14px", "15px", "16px", "17px", "18px"];
 
@@ -95,6 +95,7 @@ interface SettingsListItemProps {
 }
 
 const SettingsListItem: React.FC<SettingsListItemProps> = ({ fontSize, selectedOption, handleFontSizeChange }) => {
+	console.log(fontSize, selectedOption);
 	return (
 		<li className="relative flex h-8 cursor-pointer select-none py-1.5 pl-2 text-label-2 dark:text-dark-label-2 hover:bg-dark-fill-3 rounded-lg">
 			<div

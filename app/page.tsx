@@ -2,6 +2,7 @@
 import { useState } from "react";
 import ProblemsTable from "@/components/problemsTable/ProblemsTable";
 import Topbar from "@/components/topbar/Topbar";
+import useHasMounted from "@/hooks/useHasMounted";
 
 const LoadingSkeleton = () => {
 	return (
@@ -17,6 +18,10 @@ const LoadingSkeleton = () => {
 
 export default function Home() {
 	const [loading, setLoading] = useState(true);
+	const hasMounted = useHasMounted();
+
+	if (!hasMounted) return null;
+
 	return (
 		<main className="bg-dark-layer-2 min-h-screen">
 			<Topbar />
